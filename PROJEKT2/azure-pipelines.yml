@@ -27,7 +27,7 @@ steps:
     command: 'buildAndPush'
     repository: '$(IMAGE_NAME)'
     containerRegistry: 'DockerRegistry11'  # Service connection me username/password
-    dockerfile: $(Build.SourcesDirectory)/Dockerfile
+    dockerfile: '$(Build.SourcesDirectory)/MyDotnetApp/Dockerfile'
     tags: |
       $(Build.BuildId)
 
