@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mydotnetapp
+  labels:
+    app: mydotnetapp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mydotnetapp
+  template:
+    metadata:
+      labels:
+        app: mydotnetapp
+    spec:
+      containers:
+        - name: mydotnetapp
+          image: klea21399/mydotnetapp-app:latest
+          ports:
+            - containerPort: 80
+          env:
+            - name: ASPNETCORE_ENVIRONMENT
+              value: "Production"
+            - name: POSTGRES_HOST
+              value: "postgres" # emri i service PostgreSQL
+            - name: POSTGRES_DB
+              value: "mydatabase"
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: username
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: password

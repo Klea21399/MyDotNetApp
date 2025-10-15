@@ -1,0 +1,41 @@
+name: CI/CD AKS
+
+on:
+  push:
+    branches:
+      - main
+      - test
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Kubectl
+        uses: azure/setup-kubectl@v3
+        with:
+          version: 'latest'
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Get AKS credentials
+        run: |
+          if [ "${GITHUB_REF##*/}" == "main" ]; then
+            az aks get-credentials --resource-group MyAppResourceGroup-Prod --name MyAppAKS-Prod --overwrite-existing
+          else
+            az aks get-credentials --resource-group MyAppResourceGroup-Test --name MyAppAKS-Test --overwrite-existing
+          fi
+
+      - name: Deploy to AKS
+        run: |
+          if [ "${GITHUB_REF##*/}" == "main" ]; then
+            kubectl apply -f k8s/prod/ -n prod
+          else
+            kubectl apply -f k8s/test/ -n test
+          fi

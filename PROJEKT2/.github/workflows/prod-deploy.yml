@@ -1,0 +1,37 @@
+name: Deploy to AKS Prod
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v3
+
+    - name: Login to DockerHub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+    - name: Build Docker image
+      run: docker build -t klea21399/mydotnetapp-app:prod .
+
+    - name: Push Docker image
+      run: docker push klea21399/mydotnetapp-app:prod
+
+    - name: Azure login
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - name: Get AKS credentials (Prod)
+      run: az aks get-credentials --resource-group MyAppResourceGroup-Prod --name MyAppAKS-Prod --overwrite-existing
+
+    - name: Deploy to AKS Prod
+      run: kubectl apply -f k8s/prod/ -n prod
